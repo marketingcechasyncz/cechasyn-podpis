@@ -178,11 +178,9 @@
     .email-preview.light-mode .sig-name,
     .email-preview.light-mode .sig-title,
     .email-preview.light-mode .sig-link,
-    .email-preview.light-mode .sig-label {
+    .email-preview.light-mode .sig-label,
+    .email-preview.light-mode .sig-company {
       color: #111111 !important;
-    }
-    .email-preview.light-mode .sig-divider {
-      border-color: #111111 !important;
     }
     .email-preview.dark-mode {
       background: #1a1a1a;
@@ -190,11 +188,9 @@
     .email-preview.dark-mode .sig-name,
     .email-preview.dark-mode .sig-title,
     .email-preview.dark-mode .sig-link,
-    .email-preview.dark-mode .sig-label {
+    .email-preview.dark-mode .sig-label,
+    .email-preview.dark-mode .sig-company {
       color: #ffffff !important;
-    }
-    .email-preview.dark-mode .sig-divider {
-      border-color: #ffffff !important;
     }
     .email-preview.mobile-mode {
       background: #ffffff;
@@ -207,21 +203,9 @@
     .email-preview.mobile-mode .sig-name,
     .email-preview.mobile-mode .sig-title,
     .email-preview.mobile-mode .sig-link,
-    .email-preview.mobile-mode .sig-label {
+    .email-preview.mobile-mode .sig-label,
+    .email-preview.mobile-mode .sig-company {
       color: #111111 !important;
-    }
-    .email-preview.mobile-mode .sig-divider {
-      display: block !important;
-      border-right: none !important;
-      padding-right: 0 !important;
-      padding-bottom: 12px !important;
-    }
-    .email-preview.mobile-mode .sig-contact-table {
-      display: block !important;
-      margin-left: 0 !important;
-    }
-    .email-preview.mobile-mode .sig-contact {
-      padding-top: 0 !important;
     }
 
     /* Hidden textarea for copying */
@@ -277,7 +261,7 @@
     </div>
 
     <label for="phone">Telefon</label>
-    <input type="text" id="phone" value="+420 773 471 333">
+    <input type="text" id="phone" value="+420773471333">
 
     <label for="web">Web</label>
     <input type="text" id="web" value="www.cechasyn.cz">
@@ -376,7 +360,9 @@
   function generateSignature() {
     const name = esc(document.getElementById("name").value.trim());
     const title = esc(document.getElementById("title").value.trim()).toUpperCase();
-    const phone = esc(document.getElementById("phone").value.trim());
+    const phoneRaw = document.getElementById("phone").value.trim();
+    const phoneDisplay = esc(phoneRaw);
+    const phoneHref = "tel:" + phoneRaw.replace(/[^\d+]/g, "");
     const web = esc(document.getElementById("web").value.trim());
     const email = esc(document.getElementById("email").value.trim());
     
@@ -385,59 +371,39 @@
     const showFb = document.getElementById("showFb").checked;
     const showLi = document.getElementById("showLi").checked;
 
-    const nameSize = isCompact ? 20 : 24;
+    const nameSize = isCompact ? 18 : 20;
     const titleSize = isCompact ? 11 : 12;
-    const textSize = isCompact ? 13 : 14;
-    const socialIconSize = isCompact ? 18 : 20;
+    const socialIconSize = isCompact ? 16 : 18;
+
+    // Company info
+    const companyName = "Čech & syn Stavební společnost a.s.";
+    const companyAddress1 = "Atrium Flora, budova A";
+    const companyAddress2 = "Vinohradská 2828, 130 00 Praha 3";
 
     // Build social icons row
     let socialsHtml = '';
     if (showIg || showFb || showLi) {
       let icons = '';
       if (showIg) {
-        icons += `<a href="${CONFIG.socials.instagram}" target="_blank" style="text-decoration:none;margin-right:10px;">
-          <img src="${CONFIG.icons.instagram}" alt="Instagram" width="${socialIconSize}" height="${socialIconSize}" style="display:inline-block;border:0;vertical-align:middle;">
-        </a>`;
+        icons += `<a href="${CONFIG.socials.instagram}" target="_blank" style="text-decoration:none;margin-right:10px;"><img src="${CONFIG.icons.instagram}" alt="Instagram" width="${socialIconSize}" height="${socialIconSize}" style="display:inline-block;border:0;vertical-align:middle;"></a>`;
       }
       if (showFb) {
-        icons += `<a href="${CONFIG.socials.facebook}" target="_blank" style="text-decoration:none;margin-right:10px;">
-          <img src="${CONFIG.icons.facebook}" alt="Facebook" width="${socialIconSize}" height="${socialIconSize}" style="display:inline-block;border:0;vertical-align:middle;">
-        </a>`;
+        icons += `<a href="${CONFIG.socials.facebook}" target="_blank" style="text-decoration:none;margin-right:10px;"><img src="${CONFIG.icons.facebook}" alt="Facebook" width="${socialIconSize}" height="${socialIconSize}" style="display:inline-block;border:0;vertical-align:middle;"></a>`;
       }
       if (showLi) {
-        icons += `<a href="${CONFIG.socials.linkedin}" target="_blank" style="text-decoration:none;">
-          <img src="${CONFIG.icons.linkedin}" alt="LinkedIn" width="${socialIconSize}" height="${socialIconSize}" style="display:inline-block;border:0;vertical-align:middle;">
-        </a>`;
+        icons += `<a href="${CONFIG.socials.linkedin}" target="_blank" style="text-decoration:none;"><img src="${CONFIG.icons.linkedin}" alt="LinkedIn" width="${socialIconSize}" height="${socialIconSize}" style="display:inline-block;border:0;vertical-align:middle;"></a>`;
       }
       socialsHtml = `
-        <tr>
-          <td style="padding-top:12px;">
-            ${icons}
-          </td>
-        </tr>`;
+  <!-- Social Icons -->
+  <tr>
+    <td style="padding-top:8px;">${icons}</td>
+  </tr>`;
     }
 
     const html = `<style>
   @media (prefers-color-scheme: dark) {
-    .sig-wrapper, .sig-wrapper table { background-color: transparent !important; }
-    .sig-name, .sig-title, .sig-link, .sig-label { color: #ffffff !important; }
-    .sig-divider { border-color: #ffffff !important; }
-  }
-  @media screen and (max-width: 480px) {
-    .sig-divider { 
-      display: block !important; 
-      border-right: none !important; 
-      padding-right: 0 !important;
-      padding-bottom: 12px !important;
-    }
-    .sig-contact-table { 
-      display: block !important; 
-      margin-left: 0 !important;
-      padding-top: 0 !important;
-    }
-    .sig-contact {
-      padding-top: 0 !important;
-    }
+    .sig-wrapper, .sig-wrapper table, .sig-wrapper td { background-color: transparent !important; }
+    .sig-name, .sig-title, .sig-link, .sig-label, .sig-text, .sig-company { color: #ffffff !important; }
   }
 </style>
 <!--[if mso]>
@@ -446,102 +412,48 @@
   td { font-family: Arial, sans-serif; }
 </style>
 <![endif]-->
-<table class="sig-wrapper" cellpadding="0" cellspacing="0" border="0" style="font-family:${CONFIG.fontStack};font-size:${textSize}px;color:#111111;max-width:600px;">
+<table class="sig-wrapper" cellpadding="0" cellspacing="0" border="0" style="font-family:${CONFIG.fontStack};color:#111111;max-width:600px;">
+  <!-- Name -->
   <tr>
-    <td style="vertical-align:top;">
-      <!--[if mso]>
-      <table cellpadding="0" cellspacing="0" border="0">
-      <tr>
-      <td class="sig-divider" style="vertical-align:top;padding-right:18px;border-right:2px solid #111111;">
-      <![endif]-->
-      <!--[if !mso]><!-->
-      <table cellpadding="0" cellspacing="0" border="0" style="display:inline-block;vertical-align:top;">
-      <tr>
-      <td class="sig-divider" style="vertical-align:top;padding-right:18px;border-right:2px solid #111111;">
-      <!--<![endif]-->
-        <table cellpadding="0" cellspacing="0" border="0">
-          <tr>
-            <td class="sig-name" style="font-size:${nameSize}px;font-weight:bold;line-height:1.2;padding-bottom:6px;white-space:nowrap;color:#111111;">
-              ${name}
-            </td>
-          </tr>
-          <tr>
-            <td class="sig-title" style="font-size:${titleSize}px;font-weight:bold;letter-spacing:0.5px;line-height:1.3;color:#333333;">
-              ${title}
-            </td>
-          </tr>
-        </table>
-      </td>
-      <!--[if mso]>
-      </tr>
-      </table>
-      <![endif]-->
-      <!--[if !mso]><!-->
-      </tr>
-      </table>
-      <!--<![endif]-->
-      
-      <!--[if mso]>
-      <table cellpadding="0" cellspacing="0" border="0" style="margin-left:18px;">
-      <tr>
-      <td class="sig-contact" style="vertical-align:top;padding-top:4px;">
-      <![endif]-->
-      <!--[if !mso]><!-->
-      <table cellpadding="0" cellspacing="0" border="0" class="sig-contact-table" style="display:inline-block;vertical-align:top;margin-left:18px;">
-      <tr>
-      <td class="sig-contact" style="vertical-align:top;padding-top:4px;">
-      <!--<![endif]-->
-        <table cellpadding="0" cellspacing="0" border="0">
-          <!-- Phone -->
-          <tr>
-            <td style="padding-bottom:4px;">
-              <table cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td class="sig-label" style="vertical-align:baseline;padding-right:6px;font-weight:bold;color:#111111;">T:</td>
-                  <td style="vertical-align:baseline;">
-                    <a href="${telHref(phone)}" class="sig-link" style="color:#111111;text-decoration:none;font-weight:600;white-space:nowrap;">${phone}</a>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <!-- Email -->
-          <tr>
-            <td style="padding-bottom:4px;">
-              <table cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td class="sig-label" style="vertical-align:baseline;padding-right:6px;font-weight:bold;color:#111111;">E:</td>
-                  <td style="vertical-align:baseline;">
-                    <a href="mailto:${email}" class="sig-link" style="color:#111111;text-decoration:none;font-weight:600;">${email}</a>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <!-- Web -->
-          <tr>
-            <td>
-              <table cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td class="sig-label" style="vertical-align:baseline;padding-right:6px;font-weight:bold;color:#111111;">W:</td>
-                  <td style="vertical-align:baseline;">
-                    <a href="${ensureHttps(web)}" class="sig-link" style="color:#111111;text-decoration:none;font-weight:600;">${web}</a>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <!-- Social Icons -->
-          ${socialsHtml}
-        </table>
-      </td>
-      </tr>
-      </table>
+    <td class="sig-name" style="font-size:${nameSize}px;font-weight:bold;line-height:1.2;padding-bottom:2px;color:#111111;">
+      ${name}
     </td>
   </tr>
+  <!-- Title -->
+  <tr>
+    <td class="sig-title" style="font-size:${titleSize}px;font-weight:bold;letter-spacing:0.5px;line-height:1.3;color:#333333;padding-bottom:6px;">
+      ${title}
+    </td>
+  </tr>
+  <!-- Company Info -->
+  <tr>
+    <td class="sig-company" style="line-height:1.4;padding-bottom:10px;color:#555555;">
+      ${companyName}<br>
+      <a href="https://maps.app.goo.gl/zUdyDf8mrSQ7HtFC9" class="sig-link" style="color:#555555;text-decoration:none;">${companyAddress1}<br>${companyAddress2}</a>
+    </td>
+  </tr>
+  <!-- Phone -->
+  <tr>
+    <td style="padding-bottom:1px;color:#111111;">
+      tel: <a href="${phoneHref}" title="${phoneHref}" class="sig-link" style="color:#111111;text-decoration:none;">${phoneDisplay}</a>
+    </td>
+  </tr>
+  <!-- Email -->
+  <tr>
+    <td style="padding-bottom:1px;color:#111111;">
+      e-mail: <a href="mailto:${email}" style="color:#111111;text-decoration:none;">${email}</a>
+    </td>
+  </tr>
+  <!-- Web -->
+  <tr>
+    <td style="color:#111111;">
+      web: <a href="${ensureHttps(web)}" style="color:#111111;text-decoration:none;">${web}</a>
+    </td>
+  </tr>
+  ${socialsHtml}
   <!-- Banner -->
   <tr>
-    <td style="padding-top:16px;">
+    <td style="padding-top:14px;">
       <img src="${CONFIG.banner}" alt="Čech & syn" width="600" style="display:block;border:0;max-width:100%;height:auto;">
     </td>
   </tr>
