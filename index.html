@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Čech & syn – Email Signature Generator</title>
+
+  <!-- Manrope -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body{
+      font-family:'Manrope', Arial, Helvetica, sans-serif;
+      margin:24px;
+      background:#fafafa;
+      color:#111;
+    }
+    h2{margin:0 0 16px 0}
+
+    .wrap{
+      display:grid;
+      grid-template-columns:360px 1fr;
+      gap:20px;
+      align-items:start;
+    }
+    .card{
+      background:#fff;
+      border:1px solid #e6e6e6;
+      border-radius:12px;
+      padding:16px;
+    }
+    label{
+      display:block;
+      font-size:12px;
+      font-weight:800;
+      margin:12px 0 6px;
+    }
+    input{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid #ddd;
+      border-radius:10px;
+      font-size:14px;
+      font-family:'Manrope', Arial, Helvetica, sans-serif;
+    }
+    .row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .btns{
+      display:flex;
+      gap:10px;
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+    button{
+      cursor:pointer;
+      border:0;
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:800;
+      font-family:'Manrope', Arial, Helvetica, sans-serif;
+    }
+    .btn-primary{background:#111;color:#fff}
+    .btn-secondary{background:#eee;color:#111}
+
+    .hint{
+      font-size:12px;
+      color:#555;
+      margin-top:12px;
+      line-height:1.45;
+    }
+
+    .email-preview{
+      background:#fff;
+      border:1px dashed #ccc;
+      border-radius:12px;
+      padding:14px;
+      overflow:auto;
+    }
+
+    /* hidden textarea for reliable copy */
+    .offscreen{
+      position:absolute;
+      left:-9999px;
+      top:-9999px;
+      opacity:0;
+      height:1px;
+      width:1px;
+    }
+
+    .toggles{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:6px;
+    }
+    .toggle{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:13px;
+    }
+    .toggle input{ width:auto; }
+  </style>
+</head>
+
+<body>
+
+<h2>Čech & syn – Email Signature Generator</h2>
+
+<div class="wrap">
+
+  <!-- FORM -->
+  <div class="card">
+    <div class="row">
+      <div>
+        <label>Jméno a příjmení</label>
+        <input id="name" value="Filip Čech">
+      </div>
+      <div>
+        <label>Pozice</label>
+        <input id="title" value="Partner / generální ředitel">
+      </div>
+    </div>
+
+    <label>Telefon</label>
+    <input id="phone" value="+420 773 471 333">
+
+    <label>Web</label>
+    <input id="web" value="www.cechasyn.cz">
+
+    <label>Email</label>
+    <input id="email" value="filip.cech@cechasyn.cz">
+
+    <label>Sociální sítě (volitelné)</label>
+    <div class="toggles">
+      <label class="toggle"><input id="showIg" type="checkbox" checked> Instagram</label>
+      <label class="toggle"><input id="showFb" type="checkbox" checked> Facebook</label>
+      <label class="toggle"><input id="showLi" type="checkbox" checked> LinkedIn</label>
+    </div>
+
+    <div class="btns">
+      <button class="btn-primary" id="btnGen">Vygenerovat</button>
+      <button class="btn-secondary" id="btnSelect">Označit podpis</button>
+    </div>
+
+    <div class="hint">
+      Klikni na „Označit podpis“, poté stiskni <strong>Cmd+C</strong> (Mac) nebo
+      <strong>Ctrl+C</strong> (Windows) a vlož podpis do nastavení emailu.
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="card">
+    <strong>Náhled podpisu</strong>
+    <div id="preview" class="email-preview" style="margin-top:10px;"></div>
+  </div>
+
+</div>
+
+<textarea id="htmlOut" class="offscreen" readonly></textarea>
+
+<script>
+  // === LINKS (fixed) ===
+  const FACEBOOK_URL = "https://www.facebook.com/goldenczechhande";
+  const INSTAGRAM_URL = "https://www.instagram.com/goldenczechhande/";
+  const LINKEDIN_URL = "https://www.linkedin.com/company/cechasyn/posts/?feedView=all";
+
+  // Upload banner into repo root: /cechasyn-banner.png
+  // Result URL (example): https://YOUR-USERNAME.github.io/YOUR-REPO/cechasyn-banner.png
+  // Replace USER/REPO below to match your GitHub Pages URL.
+  const BANNER_URL = "https://semrad-olii.github.io/cechasyn-podpis/cechasyn-banner.png";
+
+  const esc = s => String(s)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;");
+
+  const asTelHref = tel => "tel:" + tel.replace(/[^\d+]/g,"");
+  const ensureHttps = url => url.startsWith("http") ? url : "https://" + url;
+
+  function socialPill(href, label){
+    // email-safe "icon" pill (no svg/images)
+    return `
+      <a href="${href}" style="
+        display:inline-block;
+        font-family:Manrope, Arial, Helvetica, sans-serif;
+        font-size:12px;
+        font-weight:700;
+        color:#111;
+        text-decoration:none;
+        border:1px solid #111;
+        border-radius:6px;
+        padding:4px 7px;
+        margin-right:6px;
+        line-height:1;
+      ">${label}</a>
+    `;
+  }
+
+  function render(){
+    const name  = esc(nameInput.value);
+    const title = esc(titleInput.value).toUpperCase();
+    const phone = esc(phoneInput.value);
+    const web   = esc(webInput.value.trim());
+    const email = esc(emailInput.value.trim());
+
+    const showFb = showFbInput.checked;
+    const showIg = showIgInput.checked;
+    const showLi = showLiInput.checked;
+
+    const socialsHtml =
+      (showIg || showFb || showLi)
+      ? `
+        <tr>
+          <td colspan="2" style="padding-top:8px;">
+            ${showIg ? socialPill(INSTAGRAM_URL, "IG") : ``}
+            ${showFb ? socialPill(FACEBOOK_URL, "FB") : ``}
+            ${showLi ? socialPill(LINKEDIN_URL, "IN") : ``}
+          </td>
+        </tr>
+      `
+      : ``;
+
+    const html = `
+<div style="font-family:Manrope, Arial, Helvetica, sans-serif;">
+  <table cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <tr>
+      <!-- LEFT -->
+      <td style="padding-right:18px; vertical-align:top;">
+        <div style="font-size:26px;font-weight:800;margin-bottom:6px;">
+          ${name}
+        </div>
+        <div style="font-size:13px;font-weight:700;letter-spacing:0.6px;">
+          ${title}
+        </div>
+      </td>
+
+      <!-- DIVIDER -->
+      <td style="border-left:2px solid #111; padding:0 18px;"></td>
+
+      <!-- RIGHT -->
+      <td style="vertical-align:top;">
+        <table cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+          <tr>
+            <td style="padding-right:10px; font-size:14px;">📞</td>
+            <td style="font-size:14px;">
+              <a href="${asTelHref(phone)}" style="color:#111;text-decoration:none;font-weight:600;">
+                ${phone}
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-right:10px; font-size:14px;">🔗</td>
+            <td style="font-size:14px;">
+              <a href="${ensureHttps(web)}" style="color:#111;text-decoration:none;font-weight:600;">
+                ${web}
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-right:10px; font-size:14px;">✉️</td>
+            <td style="font-size:14px;">
+              <a href="mailto:${email}" style="color:#111;text-decoration:none;font-weight:600;">
+                ${email}
+              </a>
+            </td>
+          </tr>
+          ${socialsHtml}
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <div style="margin-top:14px;">
+    <img src="${BANNER_URL}" width="600" style="max-width:600px;width:100%;display:block;" alt="Čech & syn banner">
+  </div>
+</div>`;
+
+    preview.innerHTML = html;
+    htmlOut.value = html;
+  }
+
+  const nameInput  = document.getElementById("name");
+  const titleInput = document.getElementById("title");
+  const phoneInput = document.getElementById("phone");
+  const webInput   = document.getElementById("web");
+  const emailInput = document.getElementById("email");
+
+  const showFbInput = document.getElementById("showFb");
+  const showIgInput = document.getElementById("showIg");
+  const showLiInput = document.getElementById("showLi");
+
+  const preview = document.getElementById("preview");
+  const htmlOut = document.getElementById("htmlOut");
+
+  document.getElementById("btnGen").onclick = render;
+
+  document.getElementById("btnSelect").onclick = () => {
+    // select hidden html safely for manual copy
+    htmlOut.focus();
+    htmlOut.select();
+    alert("Podpis je označený. Zkopíruj ho pomocí Cmd+C / Ctrl+C a vlož do podpisu v emailu.");
+  };
+
+  [
+    nameInput, titleInput, phoneInput, webInput, emailInput,
+    showFbInput, showIgInput, showLiInput
+  ].forEach(el => el.addEventListener("input", render));
+
+  render();
+</script>
+
+</body>
+</html>
