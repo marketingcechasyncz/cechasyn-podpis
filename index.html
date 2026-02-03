@@ -1,219 +1,616 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="cs">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Čech & syn – Email Signature Generator</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Čech & syn – Email Signature Generator v2</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
 
   <style>
-    body{font-family:Manrope,"Segoe UI",Inter,Arial,Helvetica,sans-serif;margin:24px;background:#fafafa;color:#111}
-    h2{margin:0 0 16px 0}
-    .wrap{display:grid;grid-template-columns:360px 1fr;gap:20px;align-items:start}
-    .card{background:#fff;border:1px solid #e6e6e6;border-radius:12px;padding:16px}
-    label{display:block;font-size:12px;font-weight:800;margin:12px 0 6px}
-    input{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;font-size:14px;font-family:Manrope,"Segoe UI",Inter,Arial,Helvetica,sans-serif}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .btns{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
-    button{cursor:pointer;border:0;border-radius:12px;padding:10px 12px;font-weight:800;font-family:Manrope,"Segoe UI",Inter,Arial,Helvetica,sans-serif}
-    .btn-primary{background:#111;color:#fff}
-    .btn-secondary{background:#eee;color:#111}
-    .hint{font-size:12px;color:#555;margin-top:12px;line-height:1.45}
-    .email-preview{background:#fff;border:1px dashed #ccc;border-radius:12px;padding:14px;overflow:auto}
-    .offscreen{position:absolute;left:-9999px;top:-9999px;opacity:0;height:1px;width:1px}
-    .toggles{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
-    .toggle{display:flex;align-items:center;gap:8px;font-size:13px}
-    .toggle input{width:auto}
-    .divider{height:1px;background:#eee;margin:14px 0}
+    * { box-sizing: border-box; }
+    body {
+      font-family: Manrope, "Segoe UI", Inter, Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #f5f5f5;
+      color: #111;
+    }
+    h1 {
+      font-size: 22px;
+      margin: 0 0 20px 0;
+      font-weight: 800;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+      align-items: start;
+      max-width: 1200px;
+    }
+    @media (max-width: 900px) {
+      .container { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #333;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      margin: 14px 0 6px;
+      color: #555;
+    }
+    label:first-child { margin-top: 0; }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #111;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .divider {
+      height: 1px;
+      background: #eee;
+      margin: 18px 0;
+    }
+    .toggles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      margin-top: 8px;
+    }
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .toggle input {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+    .btns {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-weight: 700;
+      font-size: 14px;
+      font-family: inherit;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+    button:active { transform: scale(0.98); }
+    .btn-primary {
+      background: #111;
+      color: #fff;
+    }
+    .btn-primary:hover { background: #333; }
+    .btn-secondary {
+      background: #eee;
+      color: #111;
+    }
+    .btn-secondary:hover { background: #ddd; }
+    .hint {
+      font-size: 12px;
+      color: #666;
+      margin-top: 14px;
+      line-height: 1.5;
+      padding: 12px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+    .hint strong { color: #111; }
+
+    /* Preview area */
+    .preview-wrap {
+      position: sticky;
+      top: 24px;
+    }
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .preview-modes {
+      display: flex;
+      gap: 4px;
+      background: #eee;
+      padding: 4px;
+      border-radius: 8px;
+    }
+    .preview-mode {
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .preview-mode.active {
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .email-preview {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 20px;
+      overflow: auto;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    .email-preview.light-mode {
+      background: #ffffff;
+    }
+    .email-preview.light-mode .sig-name,
+    .email-preview.light-mode .sig-title,
+    .email-preview.light-mode .sig-link {
+      color: #111111 !important;
+    }
+    .email-preview.light-mode .sig-divider {
+      border-color: #111111 !important;
+    }
+    .email-preview.dark-mode {
+      background: #1a1a1a;
+    }
+    .email-preview.dark-mode .sig-name,
+    .email-preview.dark-mode .sig-title,
+    .email-preview.dark-mode .sig-link {
+      color: #ffffff !important;
+    }
+    .email-preview.dark-mode .sig-divider {
+      border-color: #ffffff !important;
+    }
+
+    /* Hidden textarea for copying */
+    .offscreen {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #111;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+      z-index: 1000;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
   </style>
 </head>
 
 <body>
 
-<h2>Čech & syn – Email Signature Generator</h2>
+<h1>Čech & syn – Email Signature Generator</h1>
 
-<div class="wrap">
+<div class="container">
+  <!-- Form Panel -->
   <div class="card">
+    <div class="card-title">Osobní údaje</div>
+    
     <div class="row">
       <div>
-        <label>Jméno a příjmení</label>
-        <input id="name" value="Filip Čech">
+        <label for="name">Jméno a příjmení</label>
+        <input type="text" id="name" value="Filip Čech">
       </div>
       <div>
-        <label>Pozice</label>
-        <input id="title" value="Partner / generální ředitel">
+        <label for="title">Pozice</label>
+        <input type="text" id="title" value="Partner / generální ředitel">
       </div>
     </div>
 
-    <label>Telefon</label>
-    <input id="phone" value="+420 773 471 333">
+    <label for="phone">Telefon</label>
+    <input type="text" id="phone" value="+420 773 471 333">
 
-    <label>Web</label>
-    <input id="web" value="www.cechasyn.cz">
+    <label for="web">Web</label>
+    <input type="text" id="web" value="www.cechasyn.cz">
 
-    <label>Email</label>
-    <input id="email" value="filip.cech@cechasyn.cz">
+    <label for="email">Email</label>
+    <input type="text" id="email" value="filip.cech@cechasyn.cz">
 
     <div class="divider"></div>
 
-    <label>Zobrazení</label>
+    <div class="card-title">Zobrazení</div>
+    
     <div class="toggles">
-      <label class="toggle"><input id="compact" type="checkbox"> Kompaktní velikost (pro dlouhé jméno/pozici)</label>
+      <label class="toggle">
+        <input type="checkbox" id="compact">
+        Kompaktní velikost
+      </label>
     </div>
 
-    <label>Sociální sítě (volitelné)</label>
+    <label>Sociální sítě</label>
     <div class="toggles">
-      <label class="toggle"><input id="showIg" type="checkbox" checked> Instagram</label>
-      <label class="toggle"><input id="showFb" type="checkbox" checked> Facebook</label>
-      <label class="toggle"><input id="showLi" type="checkbox" checked> LinkedIn</label>
+      <label class="toggle">
+        <input type="checkbox" id="showIg" checked>
+        Instagram
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="showFb" checked>
+        Facebook
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="showLi" checked>
+        LinkedIn
+      </label>
     </div>
 
     <div class="btns">
-      <button class="btn-primary" id="btnGen" type="button">Vygenerovat</button>
-      <button class="btn-secondary" id="btnSelect" type="button">Označit podpis</button>
+      <button type="button" class="btn-primary" id="btnCopy">Kopírovat podpis</button>
+      <button type="button" class="btn-secondary" id="btnCopyHtml">Kopírovat HTML</button>
     </div>
 
     <div class="hint">
-      Klikni na „Označit podpis“, poté stiskni <strong>Cmd+C</strong> / <strong>Ctrl+C</strong> a vlož do podpisu.
+      <strong>Jak nastavit podpis:</strong><br>
+      1. Klikni na „Kopírovat podpis"<br>
+      2. Otevři nastavení podpisu v emailu<br>
+      3. Vlož pomocí <strong>Cmd+V</strong> / <strong>Ctrl+V</strong>
     </div>
   </div>
 
-  <div class="card">
-    <strong>Náhled podpisu</strong>
-    <div id="preview" class="email-preview" style="margin-top:10px;"></div>
+  <!-- Preview Panel -->
+  <div class="card preview-wrap">
+    <div class="preview-header">
+      <div class="card-title" style="margin-bottom:0;">Náhled podpisu</div>
+      <div class="preview-modes">
+        <button type="button" class="preview-mode active" data-mode="light">Light</button>
+        <button type="button" class="preview-mode" data-mode="dark">Dark</button>
+      </div>
+    </div>
+    <div id="preview" class="email-preview light-mode"></div>
   </div>
 </div>
 
+<!-- Hidden textarea for HTML copy -->
 <textarea id="htmlOut" class="offscreen" readonly></textarea>
 
+<!-- Toast notification -->
+<div id="toast" class="toast"></div>
+
 <script>
-  const FACEBOOK_URL  = "https://www.facebook.com/goldenczechhande";
-  const INSTAGRAM_URL = "https://www.instagram.com/goldenczechhande/";
-  const LINKEDIN_URL  = "https://www.linkedin.com/company/cechasyn/posts/?feedView=all";
-
-  const BANNER_SRC = "https://www.cechasyn.cz/wp-content/uploads/2026/02/cechasyn-banner.png";
-
-  const BASE = "https://marketingcechasyncz.github.io/cechasyn-podpis/";
-  const ICON_IG = BASE + "icons/instagram.png";
-  const ICON_FB = BASE + "icons/facebook.png";
-  const ICON_LI = BASE + "icons/linkedin.png";
-
-  const FONT_STACK = `Manrope, "Segoe UI", Inter, Arial, Helvetica, sans-serif`;
-
-  const esc = s => String(s)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;");
-
-  const asTelHref = tel => "tel:" + tel.replace(/[^\d+]/g,"");
-  const ensureHttps = url => url.startsWith("http") ? url : "https://" + url;
-
-  function socialIcon(href, imgSrc, alt){
-    return `<a href="${href}" style="display:inline-block;margin-right:12px;text-decoration:none;">
-      <img src="${imgSrc}" alt="${alt}" width="18" height="18" style="display:inline-block;border:0;vertical-align:middle;">
-    </a>`;
-  }
-
-  function render(){
-    const rawName  = nameInput.value.trim();
-    const rawTitle = titleInput.value.trim();
-
-    const name  = esc(rawName);
-    const title = esc(rawTitle).toUpperCase();
-    const phone = esc(phoneInput.value);
-    const web   = esc(webInput.value.trim());
-    const email = esc(emailInput.value.trim());
-
-    // auto-compact when long
-    const autoCompact = (rawName.length > 18) || (rawTitle.length > 26);
-    const isCompact = compact.checked || autoCompact;
-
-    const nameSize  = isCompact ? 22 : 26;
-    const titleSize = isCompact ? 12 : 13;
-
-    // breakpoints for mobile
-    const phonePretty = phone.replace(/\s+/g, " ").replace(/\+/g, "+<wbr>");
-    const webPretty   = web.replace(/\./g, ".<wbr>");
-    const emailPretty = email.replace(/@/, "@<wbr>").replace(/\./g, ".<wbr>");
-
-    const socials =
-      (showIg.checked ? socialIcon(INSTAGRAM_URL, ICON_IG, "Instagram") : "") +
-      (showFb.checked ? socialIcon(FACEBOOK_URL,  ICON_FB, "Facebook")  : "") +
-      (showLi.checked ? socialIcon(LINKEDIN_URL,  ICON_LI, "LinkedIn")  : "");
-
-    const socialsBlock = (showIg.checked || showFb.checked || showLi.checked)
-      ? `<div style="margin-top:10px;">${socials}</div>`
-      : ``;
-
-    const html = `
-<div style="font-family:${FONT_STACK}; max-width:600px;">
-  <div style="display:inline-block; vertical-align:top; padding-right:18px; margin-right:18px; border-right:2px solid #111;">
-    <div style="font-size:${nameSize}px;font-weight:800;margin-bottom:6px;line-height:1.1;">${name}</div>
-    <div style="font-size:${titleSize}px;font-weight:700;letter-spacing:0.6px;line-height:1.2;">${title}</div>
-  </div>
-
-  <div style="display:inline-block; vertical-align:top; padding-top:2px;">
-    <div style="margin-bottom:6px;">
-      <span style="margin-right:10px;">📞</span>
-      <a href="${asTelHref(phone)}" style="color:#111;text-decoration:none;font-weight:600;white-space:nowrap;">
-        ${phonePretty}
-      </a>
-    </div>
-    <div style="margin-bottom:6px;">
-      <span style="margin-right:10px;">🔗</span>
-      <a href="${ensureHttps(web)}"
-         style="color:#111;text-decoration:none;font-weight:600;word-break:normal;overflow-wrap:normal;white-space:normal;">
-        ${webPretty}
-      </a>
-    </div>
-    <div>
-      <span style="margin-right:10px;">✉️</span>
-      <a href="mailto:${email}"
-         style="color:#111;text-decoration:none;font-weight:600;word-break:normal;overflow-wrap:normal;white-space:normal;">
-        ${emailPretty}
-      </a>
-    </div>
-    ${socialsBlock}
-  </div>
-
-  <div style="margin-top:14px;">
-    <img src="${BANNER_SRC}" width="600" style="max-width:600px;width:100%;display:block;border:0;" alt="Čech & syn banner">
-  </div>
-</div>`;
-
-    preview.innerHTML = html;
-    htmlOut.value = html;
-  }
-
-  const nameInput = document.getElementById("name");
-  const titleInput = document.getElementById("title");
-  const phoneInput = document.getElementById("phone");
-  const webInput = document.getElementById("web");
-  const emailInput = document.getElementById("email");
-
-  const compact = document.getElementById("compact");
-
-  const showIg = document.getElementById("showIg");
-  const showFb = document.getElementById("showFb");
-  const showLi = document.getElementById("showLi");
-
-  const preview = document.getElementById("preview");
-  const htmlOut = document.getElementById("htmlOut");
-
-  document.getElementById("btnGen").onclick = render;
-  document.getElementById("btnSelect").onclick = () => {
-    htmlOut.focus();
-    htmlOut.select();
-    alert("Podpis je označený. Zkopíruj ho pomocí Cmd+C / Ctrl+C a vlož do podpisu.");
+  // === Configuration ===
+  const CONFIG = {
+    socials: {
+      facebook:  "https://www.facebook.com/goldenczechhande",
+      instagram: "https://www.instagram.com/goldenczechhande/",
+      linkedin:  "https://www.linkedin.com/company/cechasyn/posts/?feedView=all"
+    },
+    icons: {
+      phone:     "https://www.cechasyn.cz/wp-content/uploads/2026/02/phone.png",
+      link:      "https://www.cechasyn.cz/wp-content/uploads/2026/02/link.png",
+      mail:      "https://www.cechasyn.cz/wp-content/uploads/2026/02/mail.png",
+      instagram: "https://www.cechasyn.cz/wp-content/uploads/2026/02/Instagram.png",
+      facebook:  "https://www.cechasyn.cz/wp-content/uploads/2026/02/Facebook.png",
+      linkedin:  "https://www.cechasyn.cz/wp-content/uploads/2026/02/LinkedIn.png"
+    },
+    banner: "https://www.cechasyn.cz/wp-content/uploads/2026/02/cechasyn-banner.png",
+    fontStack: 'Arial, Helvetica, sans-serif'
   };
 
-  [nameInput,titleInput,phoneInput,webInput,emailInput,compact,showIg,showFb,showLi]
-    .forEach(el => el.addEventListener("input", render));
+  // === Utility Functions ===
+  const esc = str => String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 
+  const telHref = tel => "tel:" + tel.replace(/[^\d+]/g, "");
+  const ensureHttps = url => url.startsWith("http") ? url : "https://" + url;
+
+  // === Signature Generator ===
+  function generateSignature() {
+    const name = esc(document.getElementById("name").value.trim());
+    const title = esc(document.getElementById("title").value.trim()).toUpperCase();
+    const phone = esc(document.getElementById("phone").value.trim());
+    const web = esc(document.getElementById("web").value.trim());
+    const email = esc(document.getElementById("email").value.trim());
+    
+    const isCompact = document.getElementById("compact").checked;
+    const showIg = document.getElementById("showIg").checked;
+    const showFb = document.getElementById("showFb").checked;
+    const showLi = document.getElementById("showLi").checked;
+
+    const nameSize = isCompact ? 20 : 24;
+    const titleSize = isCompact ? 11 : 12;
+    const textSize = isCompact ? 13 : 14;
+    const iconSize = isCompact ? 16 : 18;
+    const socialIconSize = isCompact ? 18 : 20;
+
+    // Build social icons row
+    let socialsHtml = '';
+    if (showIg || showFb || showLi) {
+      let icons = '';
+      if (showIg) {
+        icons += `<a href="${CONFIG.socials.instagram}" target="_blank" style="text-decoration:none;margin-right:10px;">
+          <img src="${CONFIG.icons.instagram}" alt="Instagram" width="${socialIconSize}" height="${socialIconSize}" style="display:inline-block;border:0;vertical-align:middle;">
+        </a>`;
+      }
+      if (showFb) {
+        icons += `<a href="${CONFIG.socials.facebook}" target="_blank" style="text-decoration:none;margin-right:10px;">
+          <img src="${CONFIG.icons.facebook}" alt="Facebook" width="${socialIconSize}" height="${socialIconSize}" style="display:inline-block;border:0;vertical-align:middle;">
+        </a>`;
+      }
+      if (showLi) {
+        icons += `<a href="${CONFIG.socials.linkedin}" target="_blank" style="text-decoration:none;">
+          <img src="${CONFIG.icons.linkedin}" alt="LinkedIn" width="${socialIconSize}" height="${socialIconSize}" style="display:inline-block;border:0;vertical-align:middle;">
+        </a>`;
+      }
+      socialsHtml = `
+        <tr>
+          <td style="padding-top:12px;">
+            ${icons}
+          </td>
+        </tr>`;
+    }
+
+    const html = `<style>
+  @media (prefers-color-scheme: dark) {
+    .sig-wrapper, .sig-wrapper table { background-color: transparent !important; }
+    .sig-name, .sig-title, .sig-link, .sig-text { color: #ffffff !important; }
+    .sig-divider { border-color: #ffffff !important; }
+  }
+</style>
+<!--[if mso]>
+<style type="text/css">
+  table { border-collapse: collapse; }
+  td { font-family: Arial, sans-serif; }
+</style>
+<![endif]-->
+<table class="sig-wrapper" cellpadding="0" cellspacing="0" border="0" style="font-family:${CONFIG.fontStack};font-size:${textSize}px;color:#111111;max-width:600px;">
+  <tr>
+    <td style="vertical-align:top;">
+      <!--[if mso]>
+      <table cellpadding="0" cellspacing="0" border="0">
+      <tr>
+      <td class="sig-divider" style="vertical-align:top;padding-right:18px;border-right:2px solid #111111;">
+      <![endif]-->
+      <!--[if !mso]><!-->
+      <table cellpadding="0" cellspacing="0" border="0" style="display:inline-block;vertical-align:top;">
+      <tr>
+      <td class="sig-divider" style="vertical-align:top;padding-right:18px;border-right:2px solid #111111;">
+      <!--<![endif]-->
+        <table cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td class="sig-name" style="font-size:${nameSize}px;font-weight:bold;line-height:1.2;padding-bottom:6px;white-space:nowrap;color:#111111;">
+              ${name}
+            </td>
+          </tr>
+          <tr>
+            <td class="sig-title" style="font-size:${titleSize}px;font-weight:bold;letter-spacing:0.5px;line-height:1.3;color:#333333;">
+              ${title}
+            </td>
+          </tr>
+        </table>
+      </td>
+      <!--[if mso]>
+      </tr>
+      </table>
+      <![endif]-->
+      <!--[if !mso]><!-->
+      </tr>
+      </table>
+      <!--<![endif]-->
+      
+      <!--[if mso]>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin-left:18px;">
+      <tr>
+      <td style="vertical-align:top;">
+      <![endif]-->
+      <!--[if !mso]><!-->
+      <table cellpadding="0" cellspacing="0" border="0" style="display:inline-block;vertical-align:top;margin-left:18px;">
+      <tr>
+      <td style="vertical-align:top;">
+      <!--<![endif]-->
+        <table cellpadding="0" cellspacing="0" border="0">
+          <!-- Phone -->
+          <tr>
+            <td style="padding-bottom:6px;">
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="vertical-align:middle;padding-right:10px;">
+                    <img src="${CONFIG.icons.phone}" alt="" width="${iconSize}" height="${iconSize}" style="display:block;border:0;">
+                  </td>
+                  <td style="vertical-align:middle;">
+                    <a href="${telHref(phone)}" class="sig-link" style="color:#111111;text-decoration:none;font-weight:600;white-space:nowrap;">${phone}</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Web -->
+          <tr>
+            <td style="padding-bottom:6px;">
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="vertical-align:middle;padding-right:10px;">
+                    <img src="${CONFIG.icons.link}" alt="" width="${iconSize}" height="${iconSize}" style="display:block;border:0;">
+                  </td>
+                  <td style="vertical-align:middle;">
+                    <a href="${ensureHttps(web)}" class="sig-link" style="color:#111111;text-decoration:none;font-weight:600;">${web}</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Email -->
+          <tr>
+            <td>
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="vertical-align:middle;padding-right:10px;">
+                    <img src="${CONFIG.icons.mail}" alt="" width="${iconSize}" height="${iconSize}" style="display:block;border:0;">
+                  </td>
+                  <td style="vertical-align:middle;">
+                    <a href="mailto:${email}" class="sig-link" style="color:#111111;text-decoration:none;font-weight:600;">${email}</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Social Icons -->
+          ${socialsHtml}
+        </table>
+      </td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  <!-- Banner -->
+  <tr>
+    <td style="padding-top:16px;">
+      <img src="${CONFIG.banner}" alt="Čech & syn" width="600" style="display:block;border:0;max-width:100%;height:auto;">
+    </td>
+  </tr>
+</table>`;
+
+    return html;
+  }
+
+  // === Render Preview ===
+  function render() {
+    const html = generateSignature();
+    document.getElementById("preview").innerHTML = html;
+    document.getElementById("htmlOut").value = html;
+  }
+
+  // === Copy Functions ===
+  function showToast(message) {
+    const toast = document.getElementById("toast");
+    toast.textContent = message;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2500);
+  }
+
+  async function copySignature() {
+    const html = generateSignature();
+    
+    try {
+      // Use Clipboard API with HTML MIME type
+      const blob = new Blob([html], { type: "text/html" });
+      const clipboardItem = new ClipboardItem({
+        "text/html": blob,
+        "text/plain": new Blob([html], { type: "text/plain" })
+      });
+      await navigator.clipboard.write([clipboardItem]);
+      showToast("✓ Podpis zkopírován do schránky");
+    } catch (err) {
+      // Fallback: select the preview content
+      const preview = document.getElementById("preview");
+      const range = document.createRange();
+      range.selectNodeContents(preview);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      
+      try {
+        document.execCommand("copy");
+        showToast("✓ Podpis zkopírován do schránky");
+      } catch (e) {
+        showToast("⚠ Označ podpis ručně a zkopíruj Ctrl+C");
+      }
+      selection.removeAllRanges();
+    }
+  }
+
+  async function copyHtml() {
+    const html = generateSignature();
+    
+    try {
+      await navigator.clipboard.writeText(html);
+      showToast("✓ HTML kód zkopírován");
+    } catch (err) {
+      const textarea = document.getElementById("htmlOut");
+      textarea.style.position = "fixed";
+      textarea.style.left = "0";
+      textarea.style.top = "0";
+      textarea.style.opacity = "1";
+      textarea.focus();
+      textarea.select();
+      document.execCommand("copy");
+      textarea.style.position = "absolute";
+      textarea.style.left = "-9999px";
+      textarea.style.opacity = "0";
+      showToast("✓ HTML kód zkopírován");
+    }
+  }
+
+  // === Preview Mode Toggle ===
+  function setPreviewMode(mode) {
+    const preview = document.getElementById("preview");
+    const buttons = document.querySelectorAll(".preview-mode");
+    
+    buttons.forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.mode === mode);
+    });
+    
+    preview.classList.remove("light-mode", "dark-mode");
+    preview.classList.add(mode + "-mode");
+  }
+
+  // === Event Listeners ===
+  document.getElementById("btnCopy").addEventListener("click", copySignature);
+  document.getElementById("btnCopyHtml").addEventListener("click", copyHtml);
+
+  document.querySelectorAll(".preview-mode").forEach(btn => {
+    btn.addEventListener("click", () => setPreviewMode(btn.dataset.mode));
+  });
+
+  // Live preview on input change
+  const inputs = ["name", "title", "phone", "web", "email", "compact", "showIg", "showFb", "showLi"];
+  inputs.forEach(id => {
+    document.getElementById(id).addEventListener("input", render);
+    document.getElementById(id).addEventListener("change", render);
+  });
+
+  // Initial render
   render();
 </script>
 
